@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/bin/www.js",
-    "dev": "NODE_ENV=development nodemon --exec \"node --loader ts-node/esm ./src/bin/www.ts\"",
+    "dev": "cross-env NODE_ENV=development nodemon --exec \"node --loader ts-node/esm ./src/bin/www.ts\"",
     "dev:build": "NODE_ENV=development nodemon --exec \"npm run build && node ./dist/bin/www.js\"",
     "prettify": "prettier --write '**/*.{js,ts,json,md}'",
     "lint": "eslint .",
@@ -43,6 +43,7 @@
     "@types/node": "^24.9.1",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
+    "cross-env": "^10.1.0",
     "eslint": "^9.38.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",

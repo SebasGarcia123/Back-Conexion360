@@ -21,7 +21,7 @@ app.set('port', port)
 const server = http.createServer(app)
 
 const db_url = process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/'
-const db_name = process.env.MONGO_DB || 'test'
+const db_name = process.env.MONGO_DB || 'Conexion360'
 
 // MongoDB database initialization
 initDatabase()
