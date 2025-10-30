@@ -6,6 +6,8 @@ import cors from 'cors'
 import statusRouter from './routes/status'
 import authRouter from './routes/auth'
 import userRouter from './routes/user'
+import buildingRouter from './routes/building'
+import spaceRouter from './routes/space'
 import authentication from './middlewares/authentication'
 import authorization from './middlewares/authorization'
 
@@ -21,5 +23,7 @@ app.use(authorization)
 app.use('/', statusRouter)
 app.use('/auth', authRouter)
 app.use('/users', authentication, userRouter)
+app.use('/buildings', authentication, buildingRouter)
+app.use('/spaces', authentication, spaceRouter)
 
 export default app

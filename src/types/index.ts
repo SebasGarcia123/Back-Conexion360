@@ -43,7 +43,7 @@ export interface ISpace extends Document {
   spaceType: string
   description: string
   capacity: number
-  pricePerHour: number
+  pricePerDay: number
   isActive: boolean
 }
 
@@ -104,6 +104,32 @@ export interface CreateUserRequest {
   phone?: string
   governmentId?: { type: GovernmentIdType; number: string }
   bornDate?: Date
+}
+
+export interface CreateBuildingRequest {
+  name: string
+  address: string
+  city: string
+  country: string
+  postalCode: string
+}
+
+export interface CreateSpaceRequest {
+  building: string
+  pictureUrl: string
+  spaceType: spaceType
+  description: string
+  capacity: number
+  pricePerDay: number
+}
+
+export interface CreateReservationRequest {
+  user: string
+  dateFrom: Date
+  dateTo: Date
+  space: string
+  totalPrice: number
+  rentTipe: rentType
 }
 
 // Environment Variables
