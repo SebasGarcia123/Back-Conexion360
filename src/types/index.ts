@@ -26,6 +26,42 @@ export interface IRole extends Document {
   isActive: boolean
 }
 
+export interface IBuilding extends Document {
+  _id: Types.ObjectId
+  name: string
+  address: string
+  city: string
+  country: string
+  postalCode: string
+  isActive: boolean
+}
+
+export interface ISpace extends Document {
+  _id: Types.ObjectId
+  building: Types.ObjectId
+  pictureUrl: string
+  spaceType: string
+  description: string
+  capacity: number
+  pricePerHour: number
+  isActive: boolean
+}
+
+export type spaceType = 'floor' | 'office' | 'desk'
+
+export interface IReservation extends Document {
+  _id: Types.ObjectId
+  user: Types.ObjectId
+  dateFrom: Date
+  dateTo: Date
+  space: Types.ObjectId
+  totalPrice: number
+  isActive: boolean
+  rentTipe: rentType
+}
+
+export type rentType = 'day' | 'week' | 'month' | 'year'
+
 // JWT Payload
 export interface JWTPayload {
   _id: string
