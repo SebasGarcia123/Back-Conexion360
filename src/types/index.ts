@@ -51,10 +51,10 @@ export type spaceType = 'floor' | 'office' | 'desk'
 
 export interface IReservation extends Document {
   _id: Types.ObjectId
-  user: Types.ObjectId
+  userId: Types.ObjectId
   dateFrom: Date
   dateTo: Date
-  space: Types.ObjectId
+  spaceId: Types.ObjectId
   totalPrice: number
   isActive: boolean
   rentTipe: rentType
@@ -124,10 +124,10 @@ export interface CreateSpaceRequest {
 }
 
 export interface CreateReservationRequest {
-  user: string
+  userId: string
   dateFrom: Date
   dateTo: Date
-  space: string
+  spaceId: string
   totalPrice: number
   rentTipe: rentType
 }

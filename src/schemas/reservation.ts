@@ -3,10 +3,10 @@ import { IReservation } from '../types/index';
 
 const reservationSchema = new Schema<IReservation>(
     {
-        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         dateFrom: { type: Date, required: true },
         dateTo: { type: Date, required: true },
-        space: { type: Schema.Types.ObjectId, ref: 'Space', required: true },
+        spaceId: { type: Schema.Types.ObjectId, ref: 'Space', required: true },
         totalPrice: { type: Number, required: true },
         isActive: { type: Boolean, default: true },
         rentTipe: { type: String, enum: ['day', 'week', 'month', 'year'], required: true },
