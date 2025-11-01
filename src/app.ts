@@ -8,6 +8,7 @@ import authRouter from './routes/auth'
 import userRouter from './routes/user'
 import buildingRouter from './routes/building'
 import spaceRouter from './routes/space'
+import reservationRouter from './routes/reservations'
 import authentication from './middlewares/authentication'
 import authorization from './middlewares/authorization'
 
@@ -25,5 +26,6 @@ app.use('/auth', authRouter)
 app.use('/users', authentication, userRouter)
 app.use('/buildings', authentication, buildingRouter)
 app.use('/spaces', authentication, spaceRouter)
+app.use('/reservations', authentication, reservationRouter)
 
 export default app

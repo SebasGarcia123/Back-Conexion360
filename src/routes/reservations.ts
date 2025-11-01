@@ -85,9 +85,25 @@ async function updateReservation(
                 spaceId: req.body.spaceId,
                 startDate: req.body.dateFrom,
                 endDate: req.body.dateTo,
+                totalPrice: req.body.totalPrice,
+                rentTipe: req.body.rentTipe,
+
             },
             { new: true }
         );
+        
+        const dateFrom = new Date(req.body.dateFrom)
+        const dateTo = new Date(req.body.dateTo)
+
+        // diferencia en milisegundos
+        const diffMs = dateTo.getTime() - dateFrom.getTime()
+
+        // 1 día = 1000 ms * 60 seg * 60 min * 24 hs
+        const diffDays = diffMs / (1000 * 60 * 60 * 24)
+
+        console.log("La diferencia entre dias es:", diffDays)
+
+
         if (!updatedReservation) {
             res.status(404).send("Reservation not found");
             return;
