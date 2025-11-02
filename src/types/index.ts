@@ -2,20 +2,18 @@ import { Document, Types } from 'mongoose'
 
 // User Types
 export interface IUser extends Document {
+  user: string
   _id: Types.ObjectId
   email: string
   password: string
   role: Types.ObjectId
   firstName: string
   lastName: string
-  phone?: string
-  governmentId?: { type: GovernmentIdType; number: string }
-  bornDate?: Date
+  phone: string
+  document: string
   isActive: boolean
   checkPassword(potentialPassword: string): Promise<{ isOk: boolean; isLocked: boolean }>
 }
-
-export type GovernmentIdType = 'cuil' | 'cuit' | 'dni' | 'lc' | 'le' | 'pas'
 
 // Role Types
 export interface IRole extends Document {
@@ -72,6 +70,11 @@ export interface JWTPayload {
   iss?: string
 }
 
+export interface loginRequest{
+  user: string
+  password: string
+}
+
 // Request Extensions - using module augmentation instead of namespace
 declare module 'express-serve-static-core' {
   interface Request {
@@ -96,14 +99,14 @@ export interface LoginRequest {
 }
 
 export interface CreateUserRequest {
-  email: string
+  user: string
   password: string
-  role: string
+  email: string
   firstName: string
   lastName: string
-  phone?: string
-  governmentId?: { type: GovernmentIdType; number: string }
-  bornDate?: Date
+  phone: string
+  role: string
+  document: string
 }
 
 export interface CreateBuildingRequest {

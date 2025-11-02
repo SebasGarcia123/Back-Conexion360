@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose'
 import bcrypt from 'bcrypt'
-import { IUser, GovernmentIdType } from '../types/index'
+import { IUser } from '../types/index'
 
 const { ObjectId } = Schema.Types
 
@@ -13,10 +13,8 @@ const emailValidator = {
   message: 'Please provide a valid email address',
 }
 
-const governmentIdTypes: GovernmentIdType[] = ['cuil', 'cuit', 'dni', 'lc', 'le', 'pas']
-
 const userSchema = new Schema<IUser>(
-  {
+  { user:  { type: String, required: true, lowercase: true, trim: true },
     email: {
       type: String,
       required: true,
@@ -30,17 +28,13 @@ const userSchema = new Schema<IUser>(
     firstName: { type: String, required: true, lowercase: true, trim: true },
     lastName: { type: String, required: true, lowercase: true, trim: true },
     phone: { type: String, trim: true },
-    governmentId: {
-      type: { type: String, enum: governmentIdTypes },
-      number: { type: String, trim: true },
-    },
-    bornDate: { type: Date },
+    document: { type: String, required: true},
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 )
 
-userSchema.index({ 'governmentId.type': 1, 'governmentId.number': 1 }, { unique: true })
+//userSchema.index({ 'governmentId.type': 1, 'governmentId.number': 1 }, { unique: true })
 
 userSchema.method(
   'checkPassword',

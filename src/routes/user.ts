@@ -9,21 +9,20 @@ const router = express.Router()
 
 router.get('/', getAllUsers)
 router.get('/:id', getUserById)
-router.post('/', createUser)
 router.put('/:id', updateUser)
 router.delete('/:id', deleteUser)
 
-function toDate(input: string): Date {
-  const parts = input.split('/')
-  if (parts.length !== 3) {
-    throw new Error('Invalid date format. Expected DD/MM/YYYY')
-  }
-  const [day, month, year] = parts
-  if (!day || !month || !year) {
-    throw new Error('Invalid date format. Expected DD/MM/YYYY')
-  }
-  return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-}
+// function toDate(input: string): Date {
+//   const parts = input.split('/')
+//   if (parts.length !== 3) {
+//     throw new Error('Invalid date format. Expected DD/MM/YYYY')
+//   }
+//   const [day, month, year] = parts
+//   if (!day || !month || !year) {
+//     throw new Error('Invalid date format. Expected DD/MM/YYYY')
+//   }
+//   return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+// }
 
 async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
   console.log('getAllUsers by user ', req.user?._id)
@@ -61,36 +60,7 @@ async function getUserById(
   }
 }
 
-async function createUser(
-  req: Request<Record<string, never>, unknown, CreateUserRequest>,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  console.log('createUser: ', req.body)
 
-  const user = req.body
-
-  try {
-    const role = await Role.findOne({ name: user.role })
-    if (!role) {
-      res.status(404).send('Role not found')
-      return
-    }
-
-    const passEncrypted = await bcrypt.hash(user.password, 10)
-
-    const userCreated = await User.create({
-      ...user,
-      bornDate: user.bornDate ? toDate(user.bornDate.toString()) : undefined,
-      password: passEncrypted,
-      role: role._id,
-    })
-
-    res.send(userCreated)
-  } catch (err) {
-    next(err)
-  }
-}
 
 async function updateUser(
   req: Request<{ id: string }, unknown, Partial<CreateUserRequest>>,
