@@ -12,6 +12,7 @@ import spaceRouter from './routes/space'
 import registerRouter from './routes/register'
 import reservationRouter from './routes/reservations'
 import authentication from './middlewares/authentication'
+import validateRegister from './middlewares/validateRegister'
 //import authorization from './middlewares/authorization'
 
 const app = express()
@@ -25,7 +26,7 @@ app.use(cookieParser())
 
 app.use('/', statusRouter)
 app.use('/auth', authRouter)
-app.use('/register', registerRouter)
+app.use('/register', validateRegister, registerRouter)
 app.use('/login', loginRouter)
 app.use('/users', authentication, userRouter)
 app.use('/buildings', authentication, buildingRouter)

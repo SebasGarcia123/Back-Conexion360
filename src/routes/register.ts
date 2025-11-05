@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt'
 import User from '../schemas/user'
 import Role from '../schemas/role'
 import { CreateUserRequest } from '../types/index'
+import { validationResult } from 'express-validator'  
+
 
 const router = express.Router()
 
@@ -18,6 +20,13 @@ async function createUser(
   const user = req.body
 
   try {
+    const resultValidation = validationResult(req)
+
+    if(!resultValidation.isEmpty()){
+      res.status(400).json({errors: resultValidation.array()})
+      return
+    }
+
     const role = await Role.findOne({ name: user.role })
     if (!role) {
       res.status(404).send('Role not found')
@@ -34,6 +43,7 @@ async function createUser(
     res.status(201).send(userCreated)
   } catch (err) {
     next(err)
+    res.status(500).send("Error interno del servidor")
   }
 }
 
