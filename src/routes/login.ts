@@ -63,7 +63,7 @@ async function loginUser(
     })
 
     // Enviar token y algunos datos básicos del usuario
-    res.json({
+    res.status(200).json({
       token,
       user: {
         _id: foundUser._id,
