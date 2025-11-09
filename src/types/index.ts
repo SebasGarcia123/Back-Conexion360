@@ -45,7 +45,7 @@ export interface ISpace extends Document {
   isActive: boolean
 }
 
-export type spaceType = 'floor' | 'office' | 'desk'
+export type spaceType = 'Piso' | 'Oficina' | 'Escritorio'
 
 export interface IReservation extends Document {
   _id: Types.ObjectId
@@ -55,10 +55,10 @@ export interface IReservation extends Document {
   spaceId: Types.ObjectId
   totalPrice: number
   isActive: boolean
-  rentTipe: rentType
+  rentType: rentType
 }
 
-export type rentType = 'day' | 'week' | 'month' | 'year'
+export type rentType = 'Dia' | 'Semana' | 'Mes' | 'Año'
 
 // JWT Payload
 export interface JWTPayload {
@@ -132,7 +132,7 @@ export interface CreateReservationRequest {
   dateTo: Date
   spaceId: string
   totalPrice: number
-  rentTipe: rentType
+  rentType: rentType
 }
 
 // Environment Variables

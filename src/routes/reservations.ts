@@ -15,15 +15,19 @@ async function createReservation(
   res: Response,
     next: NextFunction  
 ): Promise<void> {
-  console.log("createReservation");
     try {
+        if (!req.user) {
+            res.status(401).json({ message: 'Usuario no autenticado' });
+            return
+        } 
+
         const reservationData: CreateReservationRequest = {
-            userId: req.body.userId,
+            userId: req.user._id,
             spaceId: req.body.spaceId,
             dateFrom: req.body.dateFrom,
             dateTo: req.body.dateTo,
             totalPrice: req.body.totalPrice,
-            rentTipe: req.body.rentTipe,
+            rentType: req.body.rentType,
         };
         const reservationCreate = await Reservation.create(reservationData);
         res.status(201).send(reservationCreate);
@@ -86,7 +90,7 @@ async function updateReservation(
                 startDate: req.body.dateFrom,
                 endDate: req.body.dateTo,
                 totalPrice: req.body.totalPrice,
-                rentTipe: req.body.rentTipe,
+                rentTipe: req.body.rentType,
 
             },
             { new: true }

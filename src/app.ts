@@ -2,6 +2,8 @@ import express from 'express'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import cors from 'cors'
+import path from "path";
+import { fileURLToPath } from "url";
 
 import statusRouter from './routes/status'
 import authRouter from './routes/auth'
@@ -18,6 +20,9 @@ import validateRegister from './middlewares/validateRegister'
 //import authorization from './middlewares/authorization'
 
 const app = express()
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(logger('dev'))
 app.use(cors())
@@ -36,5 +41,6 @@ app.use('/spaces', authentication, spaceRouter)
 app.use('/reservations', authentication, reservationRouter)
 app.use('/client', authentication, clientRouter)
 app.use('/admin', authentication, adminRouter)
+app.use("/images", express.static(path.join(__dirname, "uploads")));
 
 export default app

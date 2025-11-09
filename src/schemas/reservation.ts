@@ -9,7 +9,8 @@ const reservationSchema = new Schema<IReservation>(
         spaceId: { type: Schema.Types.ObjectId, ref: 'Space', required: true },
         totalPrice: { type: Number, required: true },
         isActive: { type: Boolean, default: true },
-        rentTipe: { type: String, enum: ['day', 'week', 'month', 'year'], required: true },
+        rentType: { type: String, enum: ['Dia', 'Semana', 'Mes', 'Año'], required: true }
+
     },
     { timestamps: true } // Genera automáticamente createdAt y updatedAt para saber cuándo se creó y actualizó la reserva
 )

@@ -40,12 +40,18 @@ async function getAllSpaces(
 ): Promise<void> {
     console.log("getAllSpaces");
     try {
-        const spaces = await Space.find({ isActive: true });
+        const spaces = await Space.find({ isActive: true }).populate({
+        path: "building",
+        select: "name", // solo traemos el nombre
+        })
+        console.log(spaces);
         res.send(spaces);
     } catch (err) {
         next(err);
     }
-}   
+} 
+
+
 async function getSpaceById(
     req: Request<{ id: string }>,
     res: Response,
