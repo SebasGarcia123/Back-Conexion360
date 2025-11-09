@@ -7,6 +7,8 @@ import statusRouter from './routes/status'
 import authRouter from './routes/auth'
 import userRouter from './routes/user'
 import loginRouter from './routes/login'
+import adminRouter from './routes/admin'
+import clientRouter from './routes/client'
 import buildingRouter from './routes/building'
 import spaceRouter from './routes/space'
 import registerRouter from './routes/register'
@@ -32,5 +34,7 @@ app.use('/users', authentication, userRouter)
 app.use('/buildings', authentication, buildingRouter)
 app.use('/spaces', authentication, spaceRouter)
 app.use('/reservations', authentication, reservationRouter)
+app.use('/client', authentication, clientRouter)
+app.use('/admin', authentication, adminRouter)
 
 export default app

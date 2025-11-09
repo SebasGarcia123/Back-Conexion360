@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
 import bcrypt from 'bcrypt'
-
+import authentication from '../middlewares/authentication'
 import User from '../schemas/user'
 import Role from '../schemas/role'
 import { CreateUserRequest } from '../types/index'
@@ -11,6 +11,8 @@ router.get('/', getAllUsers)
 router.get('/:id', getUserById)
 router.put('/:id', updateUser)
 router.delete('/:id', deleteUser)
+router.patch("/users/:id/deactivate", authentication, deactivateUser)
+router.patch("/users/:id/makeAdmin", authentication, makeUserAdmin)
 
 // function toDate(input: string): Date {
 //   const parts = input.split('/')
@@ -24,15 +26,15 @@ router.delete('/:id', deleteUser)
 //   return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
 // }
 
-async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
-  console.log('getAllUsers by user ', req.user?._id)
-  try {
-    const users = await User.find({ isActive: true }).populate('role')
-    res.send(users)
-  } catch (err) {
-    next(err)
+  async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    console.log('getAllUsers by user ', req.user?._id)
+    try {
+      const users = await User.find({ isActive: true }).populate('role')
+      res.send(users)
+    } catch (err) {
+      next(err)
+    }
   }
-}
 
 async function getUserById(
   req: Request<{ id: string }>,
@@ -149,6 +151,45 @@ async function deleteUser(
     await User.deleteOne({ _id: user._id })
 
     res.send(`User deleted :  ${req.params.id}`)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function deactivateUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { id } = req.params
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    )
+
+    res.send(user)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function makeUserAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { id } = req.params
+
+    const adminRole = await Role.findOne({ name: "admin" })
+
+    if(!adminRole){
+  res.status(404).send({message: "No existe rol admin"})
+  return
+}
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { role: adminRole._id },
+      { new: true }
+    )
+
+    res.send(user)
   } catch (err) {
     next(err)
   }
