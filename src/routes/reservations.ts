@@ -1,9 +1,11 @@
 import express, { Request, Response, NextFunction } from "express";
 import Reservation from "../schemas/reservation";
 import { CreateReservationRequest } from "../types/index";
+import { isSpaceAvailable } from '../services/reservationServices'
 
 const router = express.Router();
 
+router.get("/my", getMyReservations);
 router.post("/", createReservation);
 router.get("/", getAllReservations);
 router.get("/:id", getReservationById);
@@ -29,12 +31,44 @@ async function createReservation(
             totalPrice: req.body.totalPrice,
             rentType: req.body.rentType,
         };
+
+        const available = await isSpaceAvailable(
+            reservationData.spaceId,
+            new Date(reservationData.dateFrom),
+            new Date(reservationData.dateTo)
+        );
+
+        if (!available) {
+        res.status(409).json({ message: 'El espacio NO está disponible en ese rango' });
+        return;
+        }
+
         const reservationCreate = await Reservation.create(reservationData);
         res.status(201).send(reservationCreate);
     } catch (err) {
         next(err);
     }
 }
+
+    async function getMyReservations(
+    req: Request,
+    res: Response 
+    ): Promise<void> {
+    if (!req.user) {
+    res.status(401).json({ message: "no autenticado" });
+    return 
+    }
+
+    const reservations = await Reservation.find({ userId: req.user._id })
+        .populate({
+        path: 'spaceId',
+        populate: {
+        path: 'building',
+        model: 'Building'
+        }
+    });
+    res.json(reservations)
+    }
 
 async function getAllReservations(
     req: Request,

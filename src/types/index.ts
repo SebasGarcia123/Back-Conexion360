@@ -36,7 +36,7 @@ export interface IBuilding extends Document {
 
 export interface ISpace extends Document {
   _id: Types.ObjectId
-  building: Types.ObjectId
+  building: Types.ObjectId | IBuilding
   pictureUrl: string
   spaceType: string
   description: string
