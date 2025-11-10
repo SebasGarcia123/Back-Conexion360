@@ -1,11 +1,15 @@
 import express, { Request, Response, NextFunction } from "express";
 import Space from "../schemas/space";
 import { CreateSpaceRequest } from "../types/index";
+import { isSpaceAvailable } from "../services/reservationServices.js";
+import Reservation from "../schemas/reservation";
 
 const router = express.Router();
 
 router.post("/", createSpace);
 router.get("/", getAllSpaces);
+router.get("/:id/availability", availability);
+router.get("/reservations/space/:id", reservationBySpaceId);
 router.get("/:id", getSpaceById);
 router.put("/:id", updateSpace);
 router.delete("/:id", deleteSpace);
@@ -32,6 +36,53 @@ async function createSpace(
         next(err);
     }
 }
+
+async function availability (
+  req: Request<Record<string, never>, unknown, CreateSpaceRequest>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { dateFrom, dateTo } = req.query;
+
+    if (!dateFrom || !dateTo) {
+      res.status(400).json({ message: "dateFrom y dateTo son requeridos" })
+      return 
+    }
+
+    const { id: spaceId } = req.params;
+
+    if (!spaceId) {
+      res.status(400).json({ message: "spaceId requerido" });
+      return;
+    }
+
+    const available = await isSpaceAvailable(
+      spaceId,
+      new Date(dateFrom as string),
+      new Date(dateTo as string)
+    );
+
+    res.json({ available });
+
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function reservationBySpaceId (
+  req: Request<Record<string, never>, unknown, CreateSpaceRequest>,
+  res: Response,
+): Promise<void> {
+  try {
+    const reservations = await Reservation.find({ spaceId: req.params.id });
+    res.json(reservations);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error obteniendo reservas" });
+  }
+}
+
 
 async function getAllSpaces(
     req: Request,
