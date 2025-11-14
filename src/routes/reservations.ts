@@ -1,179 +1,216 @@
 import express, { Request, Response, NextFunction } from "express";
 import Reservation from "../schemas/reservation";
-import { CreateReservationRequest } from "../types/index";
-import { isSpaceAvailable } from '../services/reservationServices'
+import { CreateReservationRequest } from "../types";
+import { isSpaceAvailable } from "../services/reservationServices";
 
 const router = express.Router();
 
-router.get("/my", getMyReservations);
+/* ---------------------------------------------------------
+ * 🔹 CREATE – Nueva reserva
+ * --------------------------------------------------------- */
 router.post("/", createReservation);
+
+/* ---------------------------------------------------------
+ * 🔹 GET – Reservas del usuario autenticado
+ * --------------------------------------------------------- */
+router.get("/my", getMyReservations);
+
+/* ---------------------------------------------------------
+ * 🔹 CRUD básico
+ * --------------------------------------------------------- */
 router.get("/", getAllReservations);
 router.get("/:id", getReservationById);
 router.put("/:id", updateReservation);
 router.delete("/:id", deleteReservation);
 
+export default router;
+
+
+/* =========================================================
+ * CONTROLLERS
+ * ========================================================= */
+
 async function createReservation(
   req: Request<Record<string, never>, unknown, CreateReservationRequest>,
   res: Response,
-    next: NextFunction  
+  next: NextFunction
 ): Promise<void> {
-    try {
-        if (!req.user) {
-            res.status(401).json({ message: 'Usuario no autenticado' });
-            return
-        } 
 
-        const reservationData: CreateReservationRequest = {
-            userId: req.user._id,
-            spaceId: req.body.spaceId,
-            dateFrom: req.body.dateFrom,
-            dateTo: req.body.dateTo,
-            totalPrice: req.body.totalPrice,
-            rentType: req.body.rentType,
-        };
-
-        const available = await isSpaceAvailable(
-            reservationData.spaceId,
-            new Date(reservationData.dateFrom),
-            new Date(reservationData.dateTo)
-        );
-
-        if (!available) {
-        res.status(409).json({ message: 'El espacio NO está disponible en ese rango' });
-        return;
-        }
-
-        const reservationCreate = await Reservation.create(reservationData);
-        res.status(201).send(reservationCreate);
-    } catch (err) {
-        next(err);
-    }
-}
-
-    async function getMyReservations(
-    req: Request,
-    res: Response 
-    ): Promise<void> {
+  try {
     if (!req.user) {
-    res.status(401).json({ message: "no autenticado" });
-    return 
+      res.status(401).json({ message: "Usuario no autenticado" });
+      return;
     }
 
-    const reservations = await Reservation.find({ userId: req.user._id })
-        .populate({
-        path: 'spaceId',
-        populate: {
-        path: 'building',
-        model: 'Building'
-        }
+    const { spaceId, dateFrom, dateTo, totalPrice, rentType } = req.body;
+
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+
+    if (to <= from) {
+      res.status(400).json({ message: "dateTo debe ser mayor a dateFrom" });
+      return;
+    }
+
+    const available = await isSpaceAvailable(spaceId, from, to);
+
+    if (!available) {
+      res.status(409).json({ message: "Espacio NO disponible en ese rango" });
+      return;
+    }
+
+    const reservation = await Reservation.create({
+      userId: req.user._id,
+      spaceId,
+      dateFrom: from,
+      dateTo: to,
+      totalPrice,
+      rentType,
     });
-    res.json(reservations)
-    }
 
+    res.status(201).json(reservation);
+
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * 🔹 GET – Reservas del usuario logueado
+ * --------------------------------------------------------- */
+async function getMyReservations(req: Request, res: Response): Promise<void> {
+
+  if (!req.user) {
+    res.status(401).json({ message: "No autenticado" });
+    return;
+  }
+
+  const reservations = await Reservation.find({ userId: req.user._id })
+    .populate({
+      path: "spaceId",
+      populate: { path: "building", model: "Building" }
+    });
+
+  res.json(reservations);
+}
+
+
+/* ---------------------------------------------------------
+ * 🔹 LIST ALL
+ * --------------------------------------------------------- */
 async function getAllReservations(
-    req: Request,
-    res: Response,
-    next: NextFunction
+  req: Request,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    console.log("getAllReservations");
-    try {
-        const reservations = await Reservation.find();
-        res.send(reservations);
-    } catch (err) {
-        next(err);
-    }
-}   
+
+  try {
+    const reservations = await Reservation.find()
+      .populate("spaceId")
+      .populate("userId");
+    
+    res.json(reservations);
+
+  } catch (err) {
+    next(err);
+  }
+}
+
+
+/* ---------------------------------------------------------
+ * 🔹 GET by ID
+ * --------------------------------------------------------- */
 async function getReservationById(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    console.log("getReservation with id: ", req.params.id);
-    if (!req.params.id) {
-        res.status(500).send("The param id is not defined");
-        return;
-    }   
-    try {
-        const reservation = await Reservation.findById(req.params.id);
-        if (!reservation) {
-            res.status(404).send("Reservation not found");
-            return;
-        }
-        res.send(reservation);
-    } catch (err) {
-        next(err);
+
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+
+    if (!reservation) {
+      res.status(404).json({ message: "Reserva no encontrada" });
+      return;
     }
+
+    res.json(reservation);
+
+  } catch (err) {
+    next(err);
+  }
 }
 
+
+/* ---------------------------------------------------------
+ * 🔹 UPDATE
+ * --------------------------------------------------------- */
 async function updateReservation(
-    req: Request<{ id: string }, unknown, CreateReservationRequest>,
-    res: Response,
-    next: NextFunction
+  req: Request<{ id: string }, unknown, CreateReservationRequest>,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    console.log("updateReservation with id: ", req.params.id);
-    if (!req.params.id) {
-    res.status(404).send('Parameter id not found')
-    return
-  }
-    try {
-        const updatedReservation = await Reservation.findByIdAndUpdate(
-            req.params.id,
-            {
-                userId: req.body.userId,
-                spaceId: req.body.spaceId,
-                startDate: req.body.dateFrom,
-                endDate: req.body.dateTo,
-                totalPrice: req.body.totalPrice,
-                rentTipe: req.body.rentType,
 
-            },
-            { new: true }
-        );
-        
-        const dateFrom = new Date(req.body.dateFrom)
-        const dateTo = new Date(req.body.dateTo)
+  try {
+    const { id } = req.params;
+    const { spaceId, dateFrom, dateTo, totalPrice, rentType } = req.body;
 
-        // diferencia en milisegundos
-        const diffMs = dateTo.getTime() - dateFrom.getTime()
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
 
-        // 1 día = 1000 ms * 60 seg * 60 min * 24 hs
-        const diffDays = diffMs / (1000 * 60 * 60 * 24)
-
-        console.log("La diferencia entre dias es:", diffDays)
-
-
-        if (!updatedReservation) {
-            res.status(404).send("Reservation not found");
-            return;
-        }
-        res.send(updatedReservation);
-    } catch (err) {
-        next(err);
+    if (to <= from) {
+      res.status(400).json({ message: "dateTo debe ser mayor a dateFrom" });
+      return;
     }
-} 
 
-async function deleteReservation(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction,
-): Promise<void> {
-    console.log('deleteReservation with id: ', req.params.id)
-    if (!req.params.id) {
-    res.status(404).send('Parameter id not found')
-    return
-  }
-    try {
-        const deletedReservation = await Reservation.findByIdAndDelete(
-            req.params.id
-        );
-        if (!deletedReservation) {
-            res.status(404).send("Reservation not found");
-            return;
-        }
-        res.send(deletedReservation);
-    } catch (err) {
-        next(err);
+    // Verificar disponibilidad excluyendo la propia reserva
+    const available = await isSpaceAvailable(spaceId, from, to, id);
+
+    if (!available) {
+      res.status(409).json({ message: "Espacio NO disponible en ese rango" });
+      return;
     }
+
+    const updated = await Reservation.findByIdAndUpdate(
+      id,
+      { spaceId, dateFrom: from, dateTo: to, totalPrice, rentType },
+      { new: true }
+    );
+
+    if (!updated) {
+      res.status(404).json({ message: "Reserva no encontrada" });
+      return;
+    }
+
+    res.json(updated);
+
+  } catch (err) {
+    next(err);
+  }
 }
 
-export default router;
+
+/* ---------------------------------------------------------
+ * 🔹 DELETE
+ * --------------------------------------------------------- */
+async function deleteReservation(
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+
+  try {
+    const deleted = await Reservation.findByIdAndDelete(req.params.id);
+
+    if (!deleted) {
+      res.status(404).json({ message: "Reserva no encontrada" });
+      return;
+    }
+
+    res.json(deleted);
+
+  } catch (err) {
+    next(err);
+  }
+}

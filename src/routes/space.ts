@@ -30,6 +30,10 @@ async function createSpace(
             pricePerDay: req.body.pricePerDay,
             isActive: true,
         };
+        console.log("Valor recibido (raw):", req.body.spaceType);
+        console.log("Valor recibido (JSON):", JSON.stringify(req.body.spaceType));
+        console.log("Tipo:", typeof req.body.spaceType);
+
         const spaceCreate = await Space.create(spaceData);
         res.status(201).send(spaceCreate);
     } catch (err) {
@@ -182,6 +186,35 @@ async function deleteSpace(
         next(err);
     }
 }
+
+router.get("/available", async (req, res) => {
+  try {
+    const { dateFrom, dateTo } = req.query;
+
+    if (!dateFrom || !dateTo) {
+      return res.status(400).json({ message: "Fechas requeridas" });
+    }
+
+    const spaces = await Space.find({ isActive: true });
+
+    const disponibles = [];
+
+    for (const space of spaces) {
+      const estaLibre = await isSpaceAvailable(
+        space._id.toString(),
+        new Date(dateFrom as string),
+        new Date(dateTo as string)
+      );
+
+      if (estaLibre) disponibles.push(space);
+    }
+
+    res.json(disponibles);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error obteniendo disponibilidad" });
+  }
+});
 
 export default router;
 

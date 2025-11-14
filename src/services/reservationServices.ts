@@ -1,11 +1,30 @@
-import Reservation from "../schemas/reservation"
+import Reservation from "../schemas/reservation";
 
-export async function isSpaceAvailable(spaceId: string, dateFrom: Date, dateTo: Date) {
-  const existing = await Reservation.exists({
+export async function isSpaceAvailable(
+  spaceId: string,
+  dateFrom: Date,
+  dateTo: Date,
+  ignoreReservationId?: string
+): Promise<boolean> {
+
+  if (dateTo <= dateFrom) return false;
+
+  const query: any = {
     spaceId,
-    dateFrom: { $lt: dateTo }, // existing start < new end
-    dateTo: { $gt: dateFrom }, // existing end > new start
-  });
+    $or: [
+      {
+        dateFrom: { $lte: dateTo },
+        dateTo: { $gte: dateFrom }
+      }
+    ]
+  };
 
-  return !existing; // true si NO hay reserva que choque
+  // Excluir la reserva actual (cuando se edita)
+  if (ignoreReservationId) {
+    query._id = { $ne: ignoreReservationId };
+  }
+
+  const overlapping = await Reservation.findOne(query);
+
+  return !overlapping;
 }

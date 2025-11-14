@@ -48,14 +48,12 @@ export interface ISpace extends Document {
 export type spaceType = 'Piso' | 'Oficina' | 'Escritorio'
 
 export interface IReservation extends Document {
-  _id: Types.ObjectId
-  userId: Types.ObjectId
-  dateFrom: Date
-  dateTo: Date
-  spaceId: Types.ObjectId
-  totalPrice: number
-  isActive: boolean
-  rentType: rentType
+  userId: Types.ObjectId;
+  spaceId: Types.ObjectId;
+  dateFrom: Date;
+  dateTo: Date;
+  totalPrice: number;
+  rentType: string;
 }
 
 export type rentType = 'Dia' | 'Semana' | 'Mes' | 'Año'
