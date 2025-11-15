@@ -45,7 +45,7 @@ export interface ISpace extends Document {
   isActive: boolean
 }
 
-export type spaceType = 'Piso' | 'Oficina' | 'Escritorio'
+export type spaceType = 'Piso' | 'Oficina' | 'Escritorio co-working'
 
 export interface IReservation extends Document {
   userId: Types.ObjectId;
