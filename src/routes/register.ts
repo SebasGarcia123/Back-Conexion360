@@ -3,12 +3,13 @@ import bcrypt from 'bcrypt'
 import User from '../schemas/user'
 import Role from '../schemas/role'
 import { CreateUserRequest } from '../types/index'
-import { validationResult } from 'express-validator'  
+import { validationResult } from 'express-validator'
+import validationRegisters from '../middlewares/validationRegister'; 
 
 
 const router = express.Router()
 
-router.post('/', createUser)
+router.post('/', validationRegisters, createUser)
 
 async function createUser(
   req: Request<Record<string, never>, unknown, CreateUserRequest>,
@@ -16,6 +17,13 @@ async function createUser(
   next: NextFunction,
 ): Promise<void> {
   console.log('createUser: ', req.body)
+
+  // Validaciones
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
 
   const user = req.body
 
