@@ -11,7 +11,7 @@ const initialRoles = [
   },
   {
     _id: new ObjectId('000000000000000000000001'),
-    name: 'client',
+    name: 'cliente',
     createdAt: new Date(),
     updatedAt: new Date(),
   },

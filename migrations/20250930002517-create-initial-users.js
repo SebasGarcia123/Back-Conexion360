@@ -25,7 +25,7 @@ const initialUsers = [
     password: '$2a$10$J3Qa3YiZTxXBX7NsSXMWmeVfrnsK7GXyCQM8sQ0VpSgvULxA/DOgO', // Password1
     firstName: 'Gaston',
     lastName: 'Larriera',
-    role: new ObjectId('000000000000000000000001'), // Client
+    role: new ObjectId('000000000000000000000001'), // Cliente
     phone: '(+54) 9 1176806956',
     document:'30-23135253-1',
     isActive: true,
@@ -42,7 +42,7 @@ const initialUsers = [
     lastName: 'Lopez',
     phone: '(+598) 2204 5199',
     document:  '5023877',
-    role: new ObjectId('000000000000000000000001'), // client
+    role: new ObjectId('000000000000000000000001'), // cliente
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),

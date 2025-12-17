@@ -22,6 +22,8 @@ async function createBuilding(
             address: req.body.address,
             city: req.body.city,
             country: req.body.country,
+            latitude: req.body.latitude,
+            longitude: req.body.longitude,
             postalCode: req.body.postalCode,
             isActive: true,
         };
@@ -86,6 +88,8 @@ async function updateBuilding(
                 address: req.body.address,
                 city: req.body.city,
                 country: req.body.country,
+                latitude: req.body.latitude,
+                longitude: req.body.longitude,
                 postalCode: req.body.postalCode,
             },
             { new: true }
