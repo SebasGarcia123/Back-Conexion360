@@ -56,7 +56,10 @@ export interface IReservation extends Document {
   dateTo: Date;
   totalPrice: number;
   rentType: string;
+  status: status
 }
+
+export type status = 'Pendiente' | 'PorValorar' | 'Cancelada' | 'Cumplida'
 
 export type rentType = 'Dia' | 'Semana' | 'Mes' | 'Año'
 
@@ -135,6 +138,7 @@ export interface CreateReservationRequest {
   spaceId: string
   totalPrice: number
   rentType: rentType
+  status?: status
 }
 
 // Environment Variables
@@ -145,4 +149,15 @@ export interface EnvironmentVariables {
   MONGO_DB?: string
   JWT_SECRET?: string
   JWT_ISSUER?: string
+}
+
+//Opiniones
+export interface IOpinion extends Document {
+  name: string
+  position: string
+  company: string
+  date: Date
+  reservation: Types.ObjectId
+  space: Types.ObjectId
+  valoration: number
 }
