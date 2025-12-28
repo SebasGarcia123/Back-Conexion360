@@ -2,6 +2,10 @@ import express, { Request, Response, NextFunction } from "express";
 import Reservation from "../schemas/reservation";
 import { CreateReservationRequest } from "../types/index";
 import { isSpaceAvailable } from "../services/reservationServices";
+import Building from "../schemas/buildings";
+import dayjs from 'dayjs'
+
+
 
 const router = express.Router();
 
@@ -12,6 +16,8 @@ router.get("/space/:id", getReservationsBySpaceId);
 router.get("/:id", getReservationById);
 router.put("/:id", updateReservation);
 router.delete("/:id", deleteReservation);
+router.patch("/:id/cancel", cancelReservation);
+
 
 export default router;
 
@@ -45,6 +51,7 @@ async function createReservation(
       dateTo: dateTo,
       totalPrice: totalPrice,
       rentType: rentType,
+      status: 'Pendiente'
     };
 
     const reservation = await Reservation.create(reservationData);
@@ -90,11 +97,25 @@ async function getMyReservations(req: Request, res: Response): Promise<void> {
     return;
   }
 
+   const hoy = dayjs().startOf('day')
+
+   await Reservation.updateMany(
+    {
+      userId: req.user._id,
+      status: 'Pendiente',
+      dateTo: { $lt: hoy.toDate() },
+    },
+    {
+      $set: { status: 'PorValorar' },
+    }
+  )
+
   const reservations = await Reservation.find({ userId: req.user._id })
     .populate({
       path: "spaceId",
-      populate: { path: "building", model: "Building" },
+      populate: { path: "building", model: Building },
     });
+  console.log(JSON.stringify(reservations, null, 2))
 
   res.send(reservations);
 }
@@ -215,4 +236,28 @@ async function deleteReservation(
     next(err);
   }
 }
+
+async function cancelReservation(
+  req: Request<{ id: string }>,
+  res: Response
+) {
+  try {
+    const updated = await Reservation.findByIdAndUpdate(
+      req.params.id,
+      { status: "Cancelada" },
+      { new: true }
+    );
+
+    if (!updated) {
+      res.status(404).json({ message: "Reserva no encontrada" });
+      return;
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al cancelar la reserva" });
+  }
+}
+
 

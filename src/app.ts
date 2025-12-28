@@ -15,9 +15,10 @@ import buildingRouter from './routes/building'
 import spaceRouter from './routes/space'
 import registerRouter from './routes/register'
 import reservationRouter from './routes/reservations'
-import buildingHome from './routes/buildingHome'
+import buildingHomeRouter from './routes/buildingHome'
 import authentication from './middlewares/authentication'
 import validateRegister from './middlewares/validationRegister'
+import opinionRouter from './routes/opinion'
 //import authorization from './middlewares/authorization'
 
 const app = express()
@@ -43,6 +44,7 @@ app.use('/reservations', authentication, reservationRouter)
 app.use('/client', authentication, clientRouter)
 app.use('/admin', authentication, adminRouter)
 app.use("/images", express.static(path.join(__dirname, "uploads")));
-app.use('/buildingHome', buildingHome)
+app.use('/buildingHome', buildingHomeRouter)
+app.use('/opinions', opinionRouter)
 
 export default app
