@@ -4,6 +4,7 @@ import { CreateSpaceRequest } from "../types/index";
 import { isSpaceAvailable } from "../services/reservationServices.js";
 import Reservation from "../schemas/reservation";
 
+
 const router = express.Router();
 
 router.post("/", createSpace);
@@ -87,7 +88,6 @@ async function reservationBySpaceId (
   }
 }
 
-
 async function getAllSpaces(
     req: Request,
     res: Response,
@@ -97,7 +97,7 @@ async function getAllSpaces(
     try {
         const spaces = await Space.find({ isActive: true }).populate({
         path: "building",
-        select: "name", // solo traemos el nombre
+        select: "name address city",
         })
         console.log(spaces);
         res.send(spaces);
