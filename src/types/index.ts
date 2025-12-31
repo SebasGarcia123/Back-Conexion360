@@ -156,6 +156,7 @@ export interface IOpinion extends Document {
   name: string
   position: string
   company: string
+  comment: string
   date: Date
   reservation: Types.ObjectId
   space: Types.ObjectId

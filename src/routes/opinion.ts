@@ -1,10 +1,11 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import Opinion from "../schemas/opinions";
 import Reservation from "../schemas/reservation";
 
 const router = express.Router();
 
 router.post("/", createOpinion);
+router.get("/", getAllOpinions);
 
 export default router;
 
@@ -55,5 +56,25 @@ async function createOpinion (req: Request, res: Response) {
   } catch (error) {
     console.error(error)
     return res.status(500).json({ message: "Error al crear la valoración" })
+  }
+}
+
+async function getAllOpinions(req: Request, res: Response, next: NextFunction) : Promise<void>{
+  console.log("getAllOpinions");
+   try {
+    const opinions = await Opinion.find()
+      .populate({
+        path: 'space',
+        select: 'pictureUrl spaceType building',
+        populate: {
+          path: 'building',
+          select: 'address name',
+        },
+      });
+      console.log(opinions)
+    res.send(opinions);
+  } catch (err) {
+    console.error('Error fetching opinions:', err);
+    next(err);
   }
 }

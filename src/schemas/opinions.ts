@@ -6,6 +6,7 @@ const opinionSchema = new Schema<IOpinion>(
         name: { type: String, required: true },
         position: { type: String, required: true },
         company: { type: String, required: true },
+        comment: { type: String, required: true },
         date: { type: Date, required: true },
         reservation: { type: Schema.Types.ObjectId, ref: "Reservation", required: true},
         space: { type: Schema.Types.ObjectId, ref: "Space", required: true },
