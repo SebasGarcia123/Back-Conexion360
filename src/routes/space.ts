@@ -220,11 +220,10 @@ function normalizeEnd(date: Date) {
       ],
     }).distinct("spaceId"); // solo necesitamos el ID del espacio
 
-    // Traer espacios activos que no estén ocupados
     const espaciosDisponibles = await Space.find({
-      isActive: true,
-      _id: { $nin: reservasOcupadas }, // excluir ocupados
-    });
+        isActive: true,
+        _id: { $nin: reservasOcupadas }, // excluir ocupados
+      }).populate('building', 'name address city')
 
     return res.json(espaciosDisponibles);
   } catch (err) {

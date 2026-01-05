@@ -41,6 +41,7 @@ async function generateUserToken(req: unknown, user: IUser): Promise<TokenRespon
   const token = jwt.sign(payload, 'base-api-express-generator', {
     subject: user._id.toString(),
     issuer: 'base-api-express-generator',
+    expiresIn: '2h',
   })
 
   // const token = jwt.sign(payload, privateKey, {
