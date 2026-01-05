@@ -9,11 +9,13 @@ const router = express.Router();
 
 router.post("/", createSpace);
 router.get("/", getAllSpaces);
+router.get("/available", getAvailableSpaces);
 router.get("/:id/availability", availability);
 router.get("/reservations/space/:id", reservationBySpaceId);
 router.get("/:id", getSpaceById);
 router.put("/:id", updateSpace);
 router.delete("/:id", deleteSpace);
+
 
 async function createSpace(
   req: Request<Record<string, never>, unknown, CreateSpaceRequest>,
@@ -187,7 +189,19 @@ async function deleteSpace(
     }
 }
 
-router.get("/available", async (req, res) => {
+  function normalizeStart(date: Date) {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+function normalizeEnd(date: Date) {
+  const d = new Date(date)
+  d.setHours(23, 59, 59, 999)
+  return d
+}
+
+  async function getAvailableSpaces(req: Request, res: Response) {
   try {
     const { dateFrom, dateTo } = req.query;
 
@@ -195,26 +209,28 @@ router.get("/available", async (req, res) => {
       return res.status(400).json({ message: "Fechas requeridas" });
     }
 
-    const spaces = await Space.find({ isActive: true });
+    const from = normalizeStart(new Date(dateFrom as string));
+    const to = normalizeEnd(new Date(dateTo as string));
 
-    const disponibles = [];
+    // Buscar todas las reservas que se solapan con el rango de fechas
+    const reservasOcupadas = await Reservation.find({
+      status: { $ne: "Cancelada" }, // ignorar canceladas
+      $or: [
+        { dateFrom: { $lt: to }, dateTo: { $gt: from } }, // solapamiento
+      ],
+    }).distinct("spaceId"); // solo necesitamos el ID del espacio
 
-    for (const space of spaces) {
-      const estaLibre = await isSpaceAvailable(
-        space._id.toString(),
-        new Date(dateFrom as string),
-        new Date(dateTo as string)
-      );
+    // Traer espacios activos que no estén ocupados
+    const espaciosDisponibles = await Space.find({
+      isActive: true,
+      _id: { $nin: reservasOcupadas }, // excluir ocupados
+    });
 
-      if (estaLibre) disponibles.push(space);
-    }
-
-    res.json(disponibles);
+    return res.json(espaciosDisponibles);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error obteniendo disponibilidad" });
+    return res.status(500).json({ message: "Error obteniendo disponibilidad" });
   }
-});
+}
 
 export default router;
-

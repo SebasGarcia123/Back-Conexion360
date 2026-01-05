@@ -29,7 +29,7 @@ async function loginUser(
     const foundUser = await User.findOne({ user }).select('+password').populate('role')
 
     if (!foundUser) {
-      res.status(404).send('Usuario no encontrado')
+      res.status(404).json({ message: 'Usuario no existe' })
       return
     }
 
@@ -37,12 +37,12 @@ async function loginUser(
     const { isOk, isLocked } = await foundUser.checkPassword(password)
 
     if (!isOk) {
-      res.status(401).send('Contraseña inválida')
+      res.status(401).json({ message: 'Contraseña incorrecta' })
       return
     }
 
     if (isLocked) {
-      res.status(403).send('Usuario bloqueado')
+      res.status(403).json({ message: 'Usuario bloqueado' })
       return
     }
 
