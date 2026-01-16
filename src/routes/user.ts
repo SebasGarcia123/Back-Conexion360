@@ -7,6 +7,8 @@ import { CreateUserRequest } from '../types/index'
 
 const router = express.Router()
 
+router.get('/me', authentication, getMe)
+router.put('/me', authentication, updateMe)
 router.get('/', getAllUsers)
 router.get('/:id', getUserById)
 router.put('/:id', updateUser)
@@ -194,5 +196,76 @@ async function makeUserAdmin(req: Request, res: Response, next: NextFunction): P
     next(err)
   }
 }
+
+async function getMe(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = req.user?._id
+
+    if (!userId) {
+      res.status(401).send('Unauthorized')
+      return
+    }
+
+    const user = await User.findById(userId).populate('role')
+
+    if (!user) {
+      res.status(404).send('User not found')
+      return
+    }
+
+    res.send(user)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function updateMe(
+  req: Request<unknown, unknown, Partial<CreateUserRequest>>,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+
+  if (!req.body || Object.keys(req.body).length === 0) {
+    res.status(400).send({
+      message: 'No hay datos para actualizar',
+    })
+    return
+  }
+
+  try {
+    const userId = req.user?._id
+
+    if (!userId) {
+      res.status(401).send('Unauthorized')
+      return
+    }
+
+    // No permitir cambiar email ni rol
+    delete req.body.email
+    delete req.body.role
+
+    const userToUpdate = await User.findById(userId)
+
+    if (!userToUpdate) {
+      res.status(404).send('User not found')
+      return
+    }
+
+    if (req.body.password) {
+      req.body.password = await bcrypt.hash(req.body.password, 10)
+    }
+
+    await userToUpdate.updateOne(req.body, { runValidators: true })
+
+    res.send(userToUpdate)
+  } catch (err) {
+    next(err)
+  }
+}
+
 
 export default router
