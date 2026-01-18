@@ -230,9 +230,7 @@ async function updateMe(
 ): Promise<void> {
 
   if (!req.body || Object.keys(req.body).length === 0) {
-    res.status(400).send({
-      message: 'No hay datos para actualizar',
-    })
+    res.status(400).send({ message: 'No hay datos para actualizar' })
     return
   }
 
@@ -255,6 +253,26 @@ async function updateMe(
       return
     }
 
+    // 🔴 VALIDACIÓN CLAVE
+    if (req.body.user) {
+      const existingUser = await User.findOne({
+        user: req.body.user,
+        _id: { $ne: userId },
+      })
+
+      if (existingUser) {
+        res.status(400).json({
+          errors: [
+            {
+              path: 'user',
+              msg: 'El nombre de usuario ya existe',
+            },
+          ],
+        })
+        return
+      }
+    }
+
     if (req.body.password) {
       req.body.password = await bcrypt.hash(req.body.password, 10)
     }
@@ -266,6 +284,7 @@ async function updateMe(
     next(err)
   }
 }
+
 
 
 export default router

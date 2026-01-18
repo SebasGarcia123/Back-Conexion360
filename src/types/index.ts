@@ -59,7 +59,7 @@ export interface IReservation extends Document {
   status: status
 }
 
-export type status = 'Pendiente' | 'PorValorar' | 'Cancelada' | 'Cumplida'
+export type status = 'Pendiente' | 'Por Valorar' | 'Cancelada' | 'Cumplida'
 
 export type rentType = 'Dia' | 'Semana' | 'Mes' | 'Año'
 

@@ -14,7 +14,7 @@ const emailValidator = {
 }
 
 const userSchema = new Schema<IUser>(
-  { user:  { type: String, required: true, lowercase: true, trim: true },
+  { user:  { type: String, required: true, lowercase: true, unique: true, trim: true },
     email: {
       type: String,
       required: true,
