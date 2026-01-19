@@ -106,7 +106,7 @@ async function getMyReservations(req: Request, res: Response): Promise<void> {
       dateTo: { $lt: hoy.toDate() },
     },
     {
-      $set: { status: 'PorValorar' },
+      $set: { status: 'Por Valorar' },
     }
   )
 

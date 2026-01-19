@@ -9,7 +9,7 @@ const reservationSchema = new Schema<IReservation>(
         dateTo: { type: Date, required: true },
         totalPrice: { type: Number, required: true },
         rentType: { type: String, required: true },
-        status : { type: String, enum: ['Pendiente', 'PorValorar', 'Cancelada', 'Cumplida'] ,required: true}
+        status : { type: String, enum: ['Pendiente', 'Por Valorar', 'Cancelada', 'Cumplida'] ,required: true}
 
     },
     { timestamps: true } // Genera automáticamente createdAt y updatedAt para saber cuándo se creó y actualizó la reserva

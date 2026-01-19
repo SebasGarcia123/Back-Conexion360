@@ -31,7 +31,7 @@ async function createOpinion (req: Request, res: Response) {
       return res.status(404).json({ message: "Reserva no encontrada" })
     }
 
-    if (reserva.status !== "PorValorar") {
+    if (reserva.status !== "Por Valorar") {
       return res.status(400).json({
         message: "Esta reserva no puede valorarse",
       })
