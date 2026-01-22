@@ -13,22 +13,11 @@ router.get('/', getAllUsers)
 router.get('/:id', getUserById)
 router.put('/:id', updateUser)
 router.delete('/:id', deleteUser)
-router.patch("/users/:id/deactivate", authentication, deactivateUser)
+router.patch("/:id/deactivate", deactivateUser)
 router.patch("/users/:id/makeAdmin", authentication, makeUserAdmin)
 
-// function toDate(input: string): Date {
-//   const parts = input.split('/')
-//   if (parts.length !== 3) {
-//     throw new Error('Invalid date format. Expected DD/MM/YYYY')
-//   }
-//   const [day, month, year] = parts
-//   if (!day || !month || !year) {
-//     throw new Error('Invalid date format. Expected DD/MM/YYYY')
-//   }
-//   return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
-// }
 
-  async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     console.log('getAllUsers by user ', req.user?._id)
     try {
       const users = await User.find({ isActive: true }).populate('role')
@@ -114,17 +103,6 @@ async function updateUser(
     // This will return the previous status
     await userToUpdate.updateOne(req.body)
     res.send(userToUpdate)
-
-    // This return the current status
-    // userToUpdate.password = req.body.password
-    // userToUpdate.role = req.body.role
-    // userToUpdate.firstName = req.body.firstName
-    // userToUpdate.lastName = req.body.lastName
-    // userToUpdate.phone = req.body.phone
-    // userToUpdate.bornDate = req.body.bornDate
-    // userToUpdate.isActive = req.body.isActive
-    // await userToUpdate.save()
-    // res.send(userToUpdate)
   } catch (err) {
     next(err)
   }
