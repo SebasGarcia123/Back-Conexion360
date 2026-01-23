@@ -110,6 +110,7 @@ export interface CreateUserRequest {
   phone: string
   role: string
   document: string
+  isActive?: boolean
 }
 
 export interface CreateBuildingRequest {

@@ -20,7 +20,7 @@ router.patch("/users/:id/makeAdmin", authentication, makeUserAdmin)
 async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
     console.log('getAllUsers by user ', req.user?._id)
     try {
-      const users = await User.find({ isActive: true }).populate('role')
+      const users = await User.find().populate('role')
       res.send(users)
     } catch (err) {
       next(err)
@@ -60,53 +60,80 @@ async function updateUser(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  console.log('updateUser with id: ', req.params.id)
 
   if (!req.params.id) {
     res.status(404).send('Parameter id not found')
     return
   }
 
-  if (!req.isAdmin?.() && req.params.id !== req.user?._id) {
+  const isAdmin = req.isAdmin?.()
+  console.log("isAdmin", isAdmin)
+  const isSelf = req.user?._id === req.params.id
+  console.log("isSelf ", isSelf)
+
+  // ❌ Usuario común editando a otro
+  if (!isAdmin && !isSelf) {
+    console.log("!isAdmin && !isSelf", !isAdmin && !isSelf)
     res.status(403).send('Unauthorized')
     return
   }
 
-  // The email can't be updated
+  // ❌ Usuario común intentando cambiar rol o estado
+  if (!isAdmin) {
+    delete req.body.role
+    delete req.body.isActive
+  }
+
+  // ❌ Nadie puede cambiar su propio rol
+  if (isSelf && req.body.role) {
+    console.log("isSelf && req.body.role", isSelf && req.body.role)
+    res.status(403).send('Cannot change your own role')
+    return
+  }
+
+  // ❌ Nadie puede desactivarse a sí mismo
+  if (isSelf && req.body.isActive === false) {
+    console.log("isSelf && req.body.isActive", isSelf && req.body.isActive)
+    res.status(403).send('Cannot deactivate yourself')
+    return
+  }
+
+  // ❌ Email nunca editable
   delete req.body.email
 
   try {
     const userToUpdate = await User.findById(req.params.id)
 
     if (!userToUpdate) {
-      console.error('User not found')
       res.status(404).send('User not found')
       return
     }
 
+    // Validar rol si viene
     if (req.body.role) {
       const newRole = await Role.findById(req.body.role)
 
       if (!newRole) {
-        console.info('New role not found. Sending 400 to client')
-        res.status(400).end()
+        res.status(400).send('Invalid role')
         return
       }
+
       req.body.role = newRole._id.toString()
     }
 
+    // Encriptar password si viene
     if (req.body.password) {
-      const passEncrypted = await bcrypt.hash(req.body.password, 10)
-      req.body.password = passEncrypted
+      req.body.password = await bcrypt.hash(req.body.password, 10)
     }
 
-    // This will return the previous status
     await userToUpdate.updateOne(req.body)
     res.send(userToUpdate)
+
   } catch (err) {
     next(err)
   }
 }
+
 
 async function deleteUser(
   req: Request<{ id: string }>,

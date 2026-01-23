@@ -20,7 +20,7 @@ import authentication from './middlewares/authentication'
 import validateRegister from './middlewares/validationRegister'
 import opinionRouter from './routes/opinion'
 import roleRouter from './routes/role'
-//import authorization from './middlewares/authorization'
+import authorization from './middlewares/authorization'
 
 const app = express()
 
@@ -32,21 +32,21 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
-//app.use(authorization)
 
 app.use('/', statusRouter)
 app.use('/auth', authRouter)
 app.use('/register', validateRegister, registerRouter)
 app.use('/login', loginRouter)
-app.use('/users', authentication, userRouter)
-app.use('/buildings', authentication, buildingRouter)
-app.use('/spaces', authentication, spaceRouter)
-app.use('/reservations', authentication, reservationRouter)
-app.use('/client', authentication, clientRouter)
-app.use('/admin', authentication, adminRouter)
+app.use('/users', authentication, authorization, userRouter)
+app.use('/buildings', authentication, authorization, buildingRouter)
+app.use('/spaces', authentication, authorization, spaceRouter)
+app.use('/reservations', authentication, authorization, reservationRouter)
+app.use('/client', authentication, authorization, clientRouter)
+app.use('/admin', authentication, authorization, adminRouter)
 app.use("/images", express.static(path.join(__dirname, "uploads")));
 app.use('/buildingHome', buildingHomeRouter)
 app.use('/opinions', opinionRouter)
-app.use('roleRouter',roleRouter)
+app.use('/roles', roleRouter)
+
 
 export default app

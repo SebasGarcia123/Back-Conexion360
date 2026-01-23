@@ -10,7 +10,7 @@ export default router
 
 async function getRoles(req: Request, res: Response) {
   try {
-    const roles = await Role.find({ isActive: true }).select('_id name').lean()
+    const roles = await Role.find().select('_id name').lean()
     res.json(roles)
   } catch (error) {
     console.error(error)
