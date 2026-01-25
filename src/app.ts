@@ -21,6 +21,7 @@ import validateRegister from './middlewares/validationRegister'
 import opinionRouter from './routes/opinion'
 import roleRouter from './routes/role'
 import authorization from './middlewares/authorization'
+import indicadoresRoutes from './routes/indicadores'
 
 const app = express()
 
@@ -47,6 +48,7 @@ app.use("/images", express.static(path.join(__dirname, "uploads")));
 app.use('/buildingHome', buildingHomeRouter)
 app.use('/opinions', opinionRouter)
 app.use('/roles', roleRouter)
+app.use('/indicadores', authentication, authorization,indicadoresRoutes)
 
 
 export default app

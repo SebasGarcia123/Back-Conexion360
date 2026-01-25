@@ -163,3 +163,13 @@ export interface IOpinion extends Document {
   space: Types.ObjectId
   valoration: number
 }
+
+export interface ReservationByBuildingYear {
+  buildingId: string
+  buildingName: string
+  year: number
+  monthly: {
+    month: number
+    count: number
+  }[]
+}
