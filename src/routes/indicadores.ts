@@ -1,11 +1,14 @@
 import express, { Request, Response, NextFunction } from 'express'
 import mongoose, { PipelineStage } from 'mongoose'
 import Reservation from '../schemas/reservation'
+import Opinion from '../schemas/opinions'
+
 
 const router = express.Router()
 
 // GET /api/indicadores/edificios/reservas-por-mes
 router.get('/edificios/reservas-por-mes', getReservasPorEdificioPorMes)
+router.get('/edificios/valoracion', getValoracionPorEdificio)
 
 async function getReservasPorEdificioPorMes(
   req: Request,
@@ -123,6 +126,73 @@ async function getReservasPorEdificioPorMes(
 
     const result = await Reservation.aggregate(pipeline)
     res.send(result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function getValoracionPorEdificio(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { buildingId } = req.query
+
+    const matchStage: PipelineStage = buildingId
+      ? {
+          $match: {
+            building: new mongoose.Types.ObjectId(buildingId as string)
+          }
+        }
+      : { $match: {} }
+
+    const pipeline: PipelineStage[] = [
+      matchStage as PipelineStage,
+      {
+        $lookup: {
+          from: 'spaces',
+          localField: 'space',
+          foreignField: '_id',
+          as: 'space'
+        }
+      } as PipelineStage,
+      { $unwind: '$space' } as PipelineStage,
+      {
+        $lookup: {
+          from: 'buildings',
+          localField: 'space.building',
+          foreignField: '_id',
+          as: 'building'
+        }
+      } as PipelineStage,
+      { $unwind: '$building' } as PipelineStage,
+      {
+        $group: {
+          _id: {
+            buildingId: '$building._id',
+            buildingName: '$building.name'
+          },
+          averageValoration: { $avg: '$valoration' },
+          count: { $sum: 1 }
+        }
+      } as PipelineStage,
+      {
+        $project: {
+          _id: 0,
+          buildingId: '$_id.buildingId',
+          buildingName: '$_id.buildingName',
+          averageValoration: 1,
+          count: 1
+        }
+      } as PipelineStage,
+      {
+        $sort: { buildingName: 1 }
+      } as PipelineStage
+    ]
+
+    const result = await Opinion.aggregate(pipeline)
+    res.json(result)
   } catch (err) {
     next(err)
   }
