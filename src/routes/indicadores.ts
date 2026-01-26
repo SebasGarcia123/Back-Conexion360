@@ -8,7 +8,7 @@ const router = express.Router()
 
 // GET /api/indicadores/edificios/reservas-por-mes
 router.get('/edificios/reservas-por-mes', getReservasPorEdificioPorMes)
-router.get('/edificios/valoracion', getValoracionPorEdificio)
+router.get('/edificios/valoracion-mensual', getValoracionMensualPorEdificio)
 
 async function getReservasPorEdificioPorMes(
   req: Request,
@@ -131,24 +131,26 @@ async function getReservasPorEdificioPorMes(
   }
 }
 
-async function getValoracionPorEdificio(
+async function getValoracionMensualPorEdificio(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   try {
-    const { buildingId } = req.query
+    const { buildingId, desdeAnio, hastaAnio } = req.query
 
-    const matchStage: PipelineStage = buildingId
-      ? {
-          $match: {
-            building: new mongoose.Types.ObjectId(buildingId as string)
-          }
-        }
-      : { $match: {} }
+    const match: Record<string, any> = {}
+
+    if (desdeAnio || hastaAnio) {
+      match.date = {}
+      if (desdeAnio) match.date.$gte = new Date(`${desdeAnio}-01-01`)
+      if (hastaAnio) match.date.$lte = new Date(`${hastaAnio}-12-31`)
+    }
 
     const pipeline: PipelineStage[] = [
-      matchStage as PipelineStage,
+      { $match: match },
+
+      // Space
       {
         $lookup: {
           from: 'spaces',
@@ -156,8 +158,10 @@ async function getValoracionPorEdificio(
           foreignField: '_id',
           as: 'space'
         }
-      } as PipelineStage,
-      { $unwind: '$space' } as PipelineStage,
+      },
+      { $unwind: '$space' },
+
+      // Building
       {
         $lookup: {
           from: 'buildings',
@@ -165,30 +169,66 @@ async function getValoracionPorEdificio(
           foreignField: '_id',
           as: 'building'
         }
-      } as PipelineStage,
-      { $unwind: '$building' } as PipelineStage,
+      },
+      { $unwind: '$building' },
+
+      ...(buildingId
+        ? [{
+            $match: {
+              'building._id': new mongoose.Types.ObjectId(buildingId as string)
+            }
+          }]
+        : []),
+
+      // Año y mes (ACÁ estaba el bug)
+      {
+        $addFields: {
+          year: { $year: '$date' },
+          month: { $month: '$date' }
+        }
+      },
+
+      // Agrupación mensual
       {
         $group: {
           _id: {
             buildingId: '$building._id',
-            buildingName: '$building.name'
+            buildingName: '$building.name',
+            year: '$year',
+            month: '$month'
           },
-          averageValoration: { $avg: '$valoration' },
-          count: { $sum: 1 }
+          averageValoration: { $avg: '$valoration' }
         }
-      } as PipelineStage,
+      },
+
+      // Agrupación por año (igual que reservas)
+      {
+        $group: {
+          _id: {
+            buildingId: '$_id.buildingId',
+            buildingName: '$_id.buildingName',
+            year: '$_id.year'
+          },
+          monthly: {
+            $push: {
+              month: '$_id.month',
+              averageValoration: '$averageValoration'
+            }
+          }
+        }
+      },
+
       {
         $project: {
           _id: 0,
           buildingId: '$_id.buildingId',
           buildingName: '$_id.buildingName',
-          averageValoration: 1,
-          count: 1
+          year: '$_id.year',
+          monthly: 1
         }
-      } as PipelineStage,
-      {
-        $sort: { buildingName: 1 }
-      } as PipelineStage
+      },
+
+      { $sort: { buildingName: 1, year: 1 } }
     ]
 
     const result = await Opinion.aggregate(pipeline)
@@ -197,6 +237,7 @@ async function getValoracionPorEdificio(
     next(err)
   }
 }
+
 
 export default router
 
