@@ -11,6 +11,9 @@ router.get('/edificios/valoracion-mensual', getValoracionMensualPorEdificio)
 router.get('/espacios/reservas-por-tipo-por-mes', getReservasPorTipoEspacioPorMes)
 router.get('/espacios/promedio-valoracion-mensual', getPromedioValoracionMensualPorTipoEspacio)
 router.get('/reservas-totales-por-mes', getReservasTotalesPorMes)
+router.get('/facturacion-por-tipo-espacio', getFacturacionPorTipoEspacio)
+router.get('/facturacion-mensual-edificio', getFacturacionMensualPorEdificio)
+router.get('/facturacion-total-mensual', getFacturacionTotalMensual)
 
 async function getReservasPorEdificioPorMes(
   req: Request,
@@ -495,6 +498,245 @@ async function getReservasTotalesPorMes(
     res.json(result)
   } catch (error) {
     next(error)
+  }
+}
+
+async function getFacturacionPorTipoEspacio(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const pipeline: PipelineStage[] = [
+      // 1️⃣ Reservas válidas
+      {
+        $match: {
+          status: { $in: ['Cumplida', 'Por Valorar'] }
+        }
+      },
+
+      // 2️⃣ Space
+      {
+        $lookup: {
+          from: 'spaces',
+          localField: 'spaceId',
+          foreignField: '_id',
+          as: 'space'
+        }
+      },
+      { $unwind: '$space' },
+
+      // 3️⃣ Año y mes
+      {
+        $addFields: {
+          year: { $year: '$dateFrom' },
+          month: { $month: '$dateFrom' }
+        }
+      },
+
+      // 4️⃣ Agrupación mensual por tipo
+      {
+        $group: {
+          _id: {
+            spaceType: '$space.spaceType',
+            year: '$year',
+            month: '$month'
+          },
+          total: { $sum: '$totalPrice' }
+        }
+      },
+
+      // 5️⃣ Agrupación anual
+      {
+        $group: {
+          _id: {
+            spaceType: '$_id.spaceType',
+            year: '$_id.year'
+          },
+          monthly: {
+            $push: {
+              month: '$_id.month',
+              total: '$total'
+            }
+          }
+        }
+      },
+
+      // 6️⃣ Shape final
+      {
+        $project: {
+          _id: 0,
+          spaceType: '$_id.spaceType',
+          year: '$_id.year',
+          monthly: 1
+        }
+      },
+
+      { $sort: { spaceType: 1, year: 1 } }
+    ]
+
+    const result = await Reservation.aggregate(pipeline)
+    res.json(result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function getFacturacionMensualPorEdificio(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          status: { $in: ['Cumplida', 'Por Valorar'] }
+        }
+      },
+
+      // Space
+      {
+        $lookup: {
+          from: 'spaces',
+          localField: 'spaceId',
+          foreignField: '_id',
+          as: 'space'
+        }
+      },
+      { $unwind: '$space' },
+
+      // Building
+      {
+        $lookup: {
+          from: 'buildings',
+          localField: 'space.building',
+          foreignField: '_id',
+          as: 'building'
+        }
+      },
+      { $unwind: '$building' },
+
+      // Año / mes
+      {
+        $addFields: {
+          year: { $year: '$dateFrom' },
+          month: { $month: '$dateFrom' }
+        }
+      },
+
+      // Agrupación mensual
+      {
+        $group: {
+          _id: {
+            buildingId: '$building._id',
+            buildingName: '$building.name',
+            year: '$year',
+            month: '$month'
+          },
+          total: { $sum: '$totalPrice' }
+        }
+      },
+
+      // Agrupación anual
+      {
+        $group: {
+          _id: {
+            buildingId: '$_id.buildingId',
+            buildingName: '$_id.buildingName',
+            year: '$_id.year'
+          },
+          monthly: {
+            $push: {
+              month: '$_id.month',
+              total: '$total'
+            }
+          }
+        }
+      },
+
+      {
+        $project: {
+          _id: 0,
+          buildingId: '$_id.buildingId',
+          buildingName: '$_id.buildingName',
+          year: '$_id.year',
+          monthly: 1
+        }
+      },
+
+      { $sort: { buildingName: 1, year: 1 } }
+    ]
+
+    const result = await Reservation.aggregate(pipeline)
+    res.json(result)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function getFacturacionTotalMensual(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          status: { $in: ['Cumplida', 'Por Valorar'] }
+        }
+      },
+
+      // Año / mes
+      {
+        $addFields: {
+          year: { $year: '$dateFrom' },
+          month: { $month: '$dateFrom' }
+        }
+      },
+
+      // Agrupación mensual
+      {
+        $group: {
+          _id: {
+            year: '$year',
+            month: '$month'
+          },
+          total: { $sum: '$totalPrice' }
+        }
+      },
+
+      // Agrupación anual
+      {
+        $group: {
+          _id: {
+            year: '$_id.year'
+          },
+          monthly: {
+            $push: {
+              month: '$_id.month',
+              total: '$total'
+            }
+          }
+        }
+      },
+
+      {
+        $project: {
+          _id: 0,
+          year: '$_id.year',
+          monthly: 1
+        }
+      },
+
+      { $sort: { year: 1 } }
+    ]
+
+    const result = await Reservation.aggregate(pipeline)
+    res.json(result)
+  } catch (err) {
+    next(err)
   }
 }
 
