@@ -37,6 +37,8 @@ async function createOpinion (req: Request, res: Response) {
       })
     }
 
+    const normalizedValoration = Math.max(0, Math.min(5, valoration / 2))
+
     const opinion = await Opinion.create({
       name,
       position,
@@ -45,7 +47,7 @@ async function createOpinion (req: Request, res: Response) {
       date: new Date(),
       reservation: reserva._id,
       space,
-      valoration,
+      valoration: normalizedValoration,
     })
 
     // actualizar estado de la reserva
