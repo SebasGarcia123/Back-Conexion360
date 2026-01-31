@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import Building from "../schemas/buildings";
 import { CreateBuildingRequest } from "../types";
+import { MongoServerError } from 'mongodb'
 
 const router = express.Router();
 
@@ -15,8 +16,19 @@ async function createBuilding(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("createBuilding");
     try {
+        const exists = await Building.findOne({
+        address: req.body.address,
+        city: req.body.city,
+        country: req.body.country,
+        })
+
+        if (exists) {
+        res.status(409).json({
+            message: 'Ya existe un edificio con esa dirección',
+        })
+        return
+        }
         const buildingData: CreateBuildingRequest & { isActive: boolean } = {
             name: req.body.name,
             address: req.body.address,
@@ -30,8 +42,14 @@ async function createBuilding(
         const buildingCreate = await Building.create(buildingData);
         res.status(201).send(buildingCreate);
     } catch (err) {
-        next(err);
-    }
+        if (err instanceof MongoServerError && err.code === 11000) {
+            res.status(409).json({
+            message: 'Ya existe un edificio con esa dirección',
+            })
+            return 
+        }
+        next(err)
+        }
 }
 
 async function getAllBuildings(
