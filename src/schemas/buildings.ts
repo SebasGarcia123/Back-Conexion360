@@ -10,6 +10,7 @@ const buildingSchema = new Schema<IBuilding>(
         latitude: { type: Number, required: true},
         longitude: { type: Number, required: true},
         postalCode: { type: String, required: true },
+        urlImage: { type: String, default: 'http://localhost:4000/images/EdificioDefault.jpg' },
         isActive: { type: Boolean, default: true },
     },
     { timestamps: true } // Genera automáticamente createdAt y updatedAt para saber cuándo se creó y actualizó el edificio

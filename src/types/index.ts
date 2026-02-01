@@ -34,6 +34,7 @@ export interface IBuilding extends Document {
   longitude: number
   postalCode: string
   isActive: boolean
+  urlImage?: string
 }
 
 export interface ISpace extends Document {
