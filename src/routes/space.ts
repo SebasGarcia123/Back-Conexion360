@@ -212,24 +212,26 @@ function normalizeEnd(date: Date) {
     const from = normalizeStart(new Date(dateFrom as string));
     const to = normalizeEnd(new Date(dateTo as string));
 
-    // Buscar todas las reservas que se solapan con el rango de fechas
+    // 🔴 espacios ocupados SOLO por reservas activas
     const reservasOcupadas = await Reservation.find({
-      status: { $ne: "Cancelada" }, // ignorar canceladas
-      $or: [
-        { dateFrom: { $lt: to }, dateTo: { $gt: from } }, // solapamiento
-      ],
-    }).distinct("spaceId"); // solo necesitamos el ID del espacio
+      status: { $ne: "Cancelada" },
+      dateFrom: { $lt: to },
+      dateTo: { $gt: from },
+    }).distinct("spaceId");
 
     const espaciosDisponibles = await Space.find({
-        isActive: true,
-        _id: { $nin: reservasOcupadas }, // excluir ocupados
-      }).populate('building', 'name address city')
+      isActive: true,
+      _id: { $nin: reservasOcupadas },
+    }).populate("building", "name address city");
 
     return res.json(espaciosDisponibles);
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Error obteniendo disponibilidad" });
+    return res
+      .status(500)
+      .json({ message: "Error obteniendo disponibilidad" });
   }
 }
+
 
 export default router;

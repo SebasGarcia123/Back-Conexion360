@@ -11,12 +11,9 @@ export async function isSpaceAvailable(
 
   const query: any = {
     spaceId,
-    $or: [
-      {
-        dateFrom: { $lte: dateTo },
-        dateTo: { $gte: dateFrom }
-      }
-    ]
+    status: { $ne: 'Cancelada' }, // 👈 clave
+    dateFrom: { $lte: dateTo },
+    dateTo: { $gte: dateFrom }
   };
 
   // Excluir la reserva actual (cuando se edita)
