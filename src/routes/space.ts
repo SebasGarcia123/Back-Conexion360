@@ -110,58 +110,73 @@ async function getAllSpaces(
 
 
 async function getSpaceById(
-    req: Request<{ id: string }>,
-    res: Response,
-    next: NextFunction
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    console.log("getSpace with id: ", req.params.id);
-    if (!req.params.id) {
-        res.status(500).send("The param id is not defined");
-        return;
+  console.log("getSpace with id: ", req.params.id)
+
+  if (!req.params.id) {
+    res.status(400).send("The param id is not defined")
+    return
+  }
+
+  try {
+    const space = await Space.findById(req.params.id).populate({
+      path: 'building',
+      select: 'name address city',
+    })
+
+    if (!space) {
+      res.status(404).send("Space not found")
+      return
     }
-    try {
-        const space = await Space.findById(req.params.id);
-        if (!space) {
-            res.status(404).send("Space not found");
-            return;
-        }
-        res.send(space);
-    } catch (err) {
-        next(err);
-    }
+
+    res.send(space)
+  } catch (err) {
+    next(err)
+  }
 }
 
 async function updateSpace(
-    req: Request<{ id: string }, unknown, CreateSpaceRequest>,
-    res: Response,
-    next: NextFunction
+  req: Request<{ id: string }, unknown, CreateSpaceRequest>,
+  res: Response,
+  next: NextFunction
 ): Promise<void> {
-    console.log("updateSpace with id: ", req.params.id);
-    if (!req.params.id) {
+  console.log("updateSpace with id: ", req.params.id)
+
+  if (!req.params.id) {
     res.status(404).send('Parameter id not found')
     return
   }
-    try {
-        const updatedSpace = await Space.findByIdAndUpdate(
-            req.params.id,
-            {
-                pictureUrl: req.body.pictureUrl,
-                spaceType: req.body.spaceType,
-                description: req.body.description,
-                capacity: req.body.capacity,
-                pricePerDay: req.body.pricePerDay,
-            },
-            { new: true }
-        );
-        if (!updatedSpace) {
-            res.status(404).send("Space not found");
-            return;
-        }
-        res.send(updatedSpace);
-    } catch (err) {
-        next(err);
+
+  try {
+    const updatedSpace = await Space.findByIdAndUpdate(
+      req.params.id,
+      {
+        spaceType: req.body.spaceType,
+        description: req.body.description,
+        capacity: req.body.capacity,
+        pricePerDay: req.body.pricePerDay,
+        isActive: req.body.isActive,
+      },
+      { new: true }
+    ).populate({
+      path: 'building',
+      select: 'name address city',
+    })
+
+    if (!updatedSpace) {
+      res.status(404).send("Space not found")
+      return
     }
+
+    res.send(updatedSpace)
+  } catch (err) {
+    next(err)
+  }
 }
+
 
 async function deleteSpace(
     req: Request<{ id: string }>,

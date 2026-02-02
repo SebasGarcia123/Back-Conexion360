@@ -131,6 +131,7 @@ export interface CreateSpaceRequest {
   description: string
   capacity: number
   pricePerDay: number
+  isActive?: boolean
 }
 
 export interface CreateReservationRequest {
