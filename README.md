@@ -52,13 +52,14 @@ NODE_ENV=development
 PORT=4000
 
 # Clave secreta para firmar JWT
-JWT_SECRET=12345678
+JWT_SECRET=conexion360-backendParaFinalDeProgramacion3
+JWT_ISSUER=conexion360-api
 
 # URL del servidor MongoDB
 MONGO_URL=mongodb://localhost:27017
 
 # Nombre de la base dentro de Mongo
-MONGO_DB_NAME=test
+MONGO_DB_NAME= Conexion360
 ```
 
 Ejecutar el servidor:

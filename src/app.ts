@@ -4,6 +4,7 @@ import logger from 'morgan'
 import cors from 'cors'
 import path from "path";
 import { fileURLToPath } from "url";
+import dotenv from 'dotenv'
 
 import statusRouter from './routes/status'
 import authRouter from './routes/auth'
@@ -24,7 +25,7 @@ import authorization from './middlewares/authorization'
 import indicadoresRoutes from './routes/indicadores'
 
 const app = express()
-
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
