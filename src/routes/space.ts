@@ -12,6 +12,7 @@ router.get("/", getAllSpaces);
 router.get("/available", getAvailableSpaces);
 router.get("/:id/availability", availability);
 router.get("/reservations/space/:id", reservationBySpaceId);
+router.get("/admin", getAllSpacesAdmin)
 router.get("/:id", getSpaceById);
 router.put("/:id", updateSpace);
 router.delete("/:id", deleteSpace);
@@ -107,6 +108,25 @@ async function getAllSpaces(
         next(err);
     }
 } 
+
+// GET /spaces/admin
+async function getAllSpacesAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const spaces = await Space.find().populate({
+      path: "building",
+      select: "name address city",
+    })
+
+    res.send(spaces)
+  } catch (err) {
+    next(err)
+  }
+}
+
 
 
 async function getSpaceById(
@@ -229,7 +249,7 @@ function normalizeEnd(date: Date) {
 
     // 🔴 espacios ocupados SOLO por reservas activas
     const reservasOcupadas = await Reservation.find({
-      status: { $ne: "Cancelada" },
+      status: { $in: ["Pendiente", "Confirmada"] },
       dateFrom: { $lt: to },
       dateTo: { $gt: from },
     }).distinct("spaceId");
