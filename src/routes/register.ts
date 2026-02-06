@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response } from 'express'
 import bcrypt from 'bcrypt'
 import User from '../schemas/user'
 import Role from '../schemas/role'
@@ -14,10 +14,7 @@ router.post('/', validationRegisters, createUser)
 async function createUser(
   req: Request<Record<string, never>, unknown, CreateUserRequest>,
   res: Response,
-  next: NextFunction,
 ): Promise<void> {
-  console.log('createUser: ', req.body)
-
   // Validaciones
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -49,10 +46,28 @@ async function createUser(
       role: role._id,
     })
     res.status(201).send(userCreated)
-  } catch (err) {
-    next(err)
-    res.status(500).send("Error interno del servidor")
+  } catch (err: any) {
+  // Error de clave duplicada (email o user)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue)[0]
+
+    res.status(409).json({
+      errors: [
+        {
+          path: field,
+          msg: `El ${field} ya está registrado`
+        }
+      ]
+    })
+    return
   }
+
+  console.error(err)
+  res.status(500).json({
+    message: 'Error interno del servidor'
+  })
+}
+
 }
 
 export default router

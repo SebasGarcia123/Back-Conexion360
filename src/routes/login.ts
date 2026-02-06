@@ -18,11 +18,7 @@ async function loginUser(
   next: NextFunction
 ): Promise<void> {
 
-  const { user, password } = req.body
-  console.log("body completo recibido: ", req.body)
-  console.log("user:", user)
-  console.log("password:", password)
-  
+  const { user, password } = req.body  
 
   try {
     // Buscar usuario por campo 'user'
@@ -42,10 +38,10 @@ async function loginUser(
     }
 
     if (isLocked) {
-      res.status(403).json({ message: 'Usuario bloqueado' })
+      res.status(403).json({ message: 'Usuario inactivo' })
       return
     }
-
+    
     // Preparar payload del JWT
     const payload = {
       _id: foundUser._id.toString(),
@@ -55,6 +51,15 @@ async function loginUser(
           ? foundUser.role.name
           : foundUser.role.toString(),
     }
+
+    // Usuario inactivo
+    if (!foundUser.isActive) {
+      res.status(403).json({
+        message: 'Usuario inactivo',
+      })
+      return
+    }
+
 
     // Generar token JWT
     const token = jwt.sign(payload, JWT_SECRET, {
