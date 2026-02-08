@@ -18,7 +18,6 @@ router.patch("/users/:id/makeAdmin", authentication, makeUserAdmin)
 
 
 async function getAllUsers(req: Request, res: Response, next: NextFunction): Promise<void> {
-    console.log('getAllUsers by user ', req.user?._id)
     try {
       const users = await User.find().populate('role')
       res.send(users)
@@ -32,7 +31,6 @@ async function getUserById(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  console.log('getUser with id: ', req.params.id)
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
@@ -67,13 +65,10 @@ async function updateUser(
   }
 
   const isAdmin = req.isAdmin?.()
-  console.log("isAdmin", isAdmin)
   const isSelf = req.user?._id === req.params.id
-  console.log("isSelf ", isSelf)
 
   // ❌ Usuario común editando a otro
   if (!isAdmin && !isSelf) {
-    console.log("!isAdmin && !isSelf", !isAdmin && !isSelf)
     res.status(403).send('Unauthorized')
     return
   }
@@ -86,14 +81,12 @@ async function updateUser(
 
   // ❌ Nadie puede cambiar su propio rol
   if (isSelf && req.body.role) {
-    console.log("isSelf && req.body.role", isSelf && req.body.role)
     res.status(403).send('Cannot change your own role')
     return
   }
 
   // ❌ Nadie puede desactivarse a sí mismo
   if (isSelf && req.body.isActive === false) {
-    console.log("isSelf && req.body.isActive", isSelf && req.body.isActive)
     res.status(403).send('Cannot deactivate yourself')
     return
   }
@@ -140,7 +133,6 @@ async function deleteUser(
   res: Response,
   next: NextFunction,
 ): Promise<void> {
-  console.log('deleteUser with id: ', req.params.id)
 
   if (!req.params.id) {
     res.status(500).send('The param id is not defined')
@@ -258,7 +250,7 @@ async function updateMe(
       return
     }
 
-    // 🔴 VALIDACIÓN CLAVE
+    //  VALIDACIÓN NOMBRE DE USUARIO
     if (req.body.user) {
       const existingUser = await User.findOne({
         user: req.body.user,

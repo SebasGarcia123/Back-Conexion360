@@ -1,13 +1,27 @@
 import express, { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
 import User from '../schemas/user'
 import { loginRequest } from '../types/index'
+import jwt, { SignOptions } from 'jsonwebtoken'
+import type { StringValue } from 'ms'
+
 
 const router = express.Router()
 
+const signOptions: SignOptions = {
+  expiresIn: (process.env.JWT_EXPIRES_IN ?? '2h') as StringValue,
+  issuer: 'base-api-express-generator',
+}
+
 // Clave secreta para JWT (en producción usar process.env.JWT_SECRET)
-const JWT_SECRET = 'base-api-express-generator'
-const JWT_EXPIRES_IN = '2h' // tiempo de expiración del token
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('JWT_SECRET no está definido')
+  }
+  return secret
+}
+
+// const JWT_EXPIRES_IN = '2h' // tiempo de expiración del token
 
 router.post('/', loginUser)
 
@@ -62,10 +76,8 @@ async function loginUser(
 
 
     // Generar token JWT
-    const token = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN,
-      issuer: 'base-api-express-generator',
-    })
+    const token = jwt.sign(payload, getJwtSecret(), signOptions)
+
 
     // Enviar token y algunos datos básicos del usuario
     res.status(200).json({

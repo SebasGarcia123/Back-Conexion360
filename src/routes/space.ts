@@ -23,7 +23,6 @@ async function createSpace(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("createSpace");
     try {
         const spaceData: CreateSpaceRequest & { isActive: boolean } = {
             pictureUrl: req.body.pictureUrl,
@@ -34,9 +33,6 @@ async function createSpace(
             pricePerDay: req.body.pricePerDay,
             isActive: true,
         };
-        console.log("Valor recibido (raw):", req.body.spaceType);
-        console.log("Valor recibido (JSON):", JSON.stringify(req.body.spaceType));
-        console.log("Tipo:", typeof req.body.spaceType);
 
         const spaceCreate = await Space.create(spaceData);
         res.status(201).send(spaceCreate);
@@ -96,13 +92,11 @@ async function getAllSpaces(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    console.log("getAllSpaces");
     try {
         const spaces = await Space.find({ isActive: true }).populate({
         path: "building",
         select: "name address city",
         })
-        console.log(spaces);
         res.send(spaces);
     } catch (err) {
         next(err);
@@ -134,7 +128,6 @@ async function getSpaceById(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("getSpace with id: ", req.params.id)
 
   if (!req.params.id) {
     res.status(400).send("The param id is not defined")
@@ -163,7 +156,6 @@ async function updateSpace(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("updateSpace with id: ", req.params.id)
 
   if (!req.params.id) {
     res.status(404).send('Parameter id not found')
@@ -203,7 +195,6 @@ async function deleteSpace(
     res: Response,
     next: NextFunction,
 ): Promise<void> {
-    console.log('deleteSpace with id: ', req.params.id)
     if (!req.params.id) {
     res.status(404).send('Parameter id not found')
     return

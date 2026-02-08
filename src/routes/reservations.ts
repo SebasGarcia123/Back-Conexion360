@@ -30,7 +30,6 @@ async function createReservation(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("createReservation");
 
   try {
     if (!req.user) {
@@ -39,10 +38,6 @@ async function createReservation(
     }
 
     const { spaceId, dateFrom, dateTo, totalPrice, rentType } = req.body;
-    console.log("BODY:", req.body);
-    console.log("dateFrom recibido:", dateFrom);
-    console.log("dateTo recibido:", dateTo);
-    console.log("rentType:", rentType);
 
     const reservationData = {
       userId: req.user._id,
@@ -55,8 +50,6 @@ async function createReservation(
     };
 
     const reservation = await Reservation.create(reservationData);
-    console.log("Collection usada:", Reservation.collection.name);
-    console.log("Documento creado:", reservation);
 
     res.status(201).send(reservation);
 
@@ -74,7 +67,6 @@ async function getAllReservations(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("getAllReservations");
 
   try {
     const reservations = await Reservation.find()
@@ -115,7 +107,7 @@ async function getMyReservations(req: Request, res: Response): Promise<void> {
       path: "spaceId",
       populate: { path: "building", model: Building },
     });
-  console.log(JSON.stringify(reservations, null, 2))
+
 
   res.send(reservations);
 }
@@ -143,7 +135,6 @@ async function getReservationById(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("getReservation id:", req.params.id);
 
   try {
     const reservation = await Reservation.findById(req.params.id);
@@ -168,7 +159,6 @@ async function updateReservation(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("updateReservation id:", req.params.id);
 
   try {
     const { id } = req.params;
@@ -220,7 +210,6 @@ async function deleteReservation(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  console.log("deleteReservation id:", req.params.id);
 
   try {
     const deleted = await Reservation.findByIdAndDelete(req.params.id);

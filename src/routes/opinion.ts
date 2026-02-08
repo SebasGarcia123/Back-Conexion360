@@ -62,7 +62,6 @@ async function createOpinion (req: Request, res: Response) {
 }
 
 async function getAllOpinions(req: Request, res: Response, next: NextFunction) : Promise<void>{
-  console.log("getAllOpinions");
    try {
     const opinions = await Opinion.find()
       .populate({
@@ -73,7 +72,6 @@ async function getAllOpinions(req: Request, res: Response, next: NextFunction) :
           select: 'address name',
         },
       });
-      console.log(opinions)
     res.send(opinions);
   } catch (err) {
     console.error('Error fetching opinions:', err);

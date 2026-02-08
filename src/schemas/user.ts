@@ -34,8 +34,6 @@ const userSchema = new Schema<IUser>(
   { timestamps: true },
 )
 
-//userSchema.index({ 'governmentId.type': 1, 'governmentId.number': 1 }, { unique: true })
-
 userSchema.method(
   'checkPassword',
   async function checkPassword(

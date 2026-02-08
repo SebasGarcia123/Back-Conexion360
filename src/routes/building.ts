@@ -57,7 +57,6 @@ async function getAllBuildings(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    console.log("getAllBuildings");
     try {
         const buildings = await Building.find({ isActive: true });
         res.send(buildings);
@@ -71,7 +70,6 @@ async function getBuildingById(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    console.log("getBuilding with id: ", req.params.id);
     if (!req.params.id) {
         res.status(500).send("The param id is not defined");
         return;
@@ -93,7 +91,6 @@ async function updateBuilding(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    console.log("updateBuilding with id: ", req.params.id);
     if (!req.params.id) {
     res.status(404).send('Parameter id not found')
     return
@@ -127,7 +124,6 @@ async function deleteBuilding(
     res: Response,
     next: NextFunction,
 ): Promise<void> {
-    console.log('deleteBuilding with id: ', req.params.id)
     if (!req.params.id) {
         res.status(500).send('The param id is not defined')
         return

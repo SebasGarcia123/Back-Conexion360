@@ -10,7 +10,6 @@ async function getAllBuildings(
     res: Response,
     next: NextFunction
 ): Promise<void> {
-    console.log("getAllBuildings");
     try {
         const buildings = await Building.find({ isActive: true });
         res.send(buildings);
