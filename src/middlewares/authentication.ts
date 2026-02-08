@@ -7,6 +7,14 @@
 
   // const publicKey = fs.readFileSync(path.join(__dirname, `../keys/base-api-express-generator.pub`))
 
+  function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('JWT_SECRET no está definido')
+  }
+  return secret
+}
+
   function getToken(req: Request, next: NextFunction): string | void {
     const TOKEN_REGEX = /^\s*Bearer\s+(\S+)/g
     const matches = TOKEN_REGEX.exec(req.headers.authorization || '')
@@ -34,7 +42,7 @@
 
     try {
       // Unsecure alternative
-      const decoded = jwt.verify(token, 'base-api-express-generator', {
+      const decoded = jwt.verify(token, getJwtSecret(), {
         issuer: 'base-api-express-generator',
       }) as JWTPayload
 
