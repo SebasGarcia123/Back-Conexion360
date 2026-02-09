@@ -10,6 +10,7 @@ const router = express.Router();
 router.post("/", createSpace);
 router.get("/", getAllSpaces);
 router.get("/available", getAvailableSpaces);
+router.get('/available-space', getSpacesWithoutActiveReservations)
 router.get("/:id/availability", availability);
 router.get("/reservations/space/:id", reservationBySpaceId);
 router.get("/admin", getAllSpacesAdmin)
@@ -74,18 +75,23 @@ async function availability (
   }
 }
 
-async function reservationBySpaceId (
-  req: Request<Record<string, never>, unknown, CreateSpaceRequest>,
-  res: Response,
+async function reservationBySpaceId(
+  req: Request,
+  res: Response
 ): Promise<void> {
   try {
-    const reservations = await Reservation.find({ spaceId: req.params.id });
+    const reservations = await Reservation.find({
+      spaceId: req.params.id,
+      status: { $ne: 'Cancelada' },
+    }).select('dateFrom dateTo');
+
     res.json(reservations);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error obteniendo reservas" });
+    res.status(500).json({ message: 'Error obteniendo reservas' });
   }
 }
+
 
 async function getAllSpaces(req: Request, res: Response, next: NextFunction) {
   try {
@@ -257,6 +263,31 @@ function normalizeEnd(date: Date) {
     return res
       .status(500)
       .json({ message: "Error obteniendo disponibilidad" });
+  }
+}
+
+async function getSpacesWithoutActiveReservations(
+  req: Request,
+  res: Response
+) {
+  try {
+    // espacios que tienen reservas NO canceladas
+    const spacesWithActiveReservations = await Reservation.distinct(
+      'spaceId',
+      { status: { $ne: 'Cancelada' } }
+    )
+
+    const availableSpaces = await Space.find({
+      _id: { $nin: spacesWithActiveReservations },
+      isActive: true,
+    })
+
+    return res.status(200).json(availableSpaces)
+  } catch (error) {
+    console.error(error)
+    return res
+      .status(500)
+      .json({ message: 'Error al obtener espacios disponibles' })
   }
 }
 

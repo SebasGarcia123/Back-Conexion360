@@ -56,7 +56,7 @@ JWT_SECRET=conexion360-backendParaFinalDeProgramacion3
 JWT_ISSUER=conexion360-api
 
 # URL del servidor MongoDB
-MONGO_URL=mongodb://localhost:27017
+MONGO_URL=mongodb://127.0.0.1:27017/
 
 # Nombre de la base dentro de Mongo
 MONGO_DB_NAME= Conexion360
