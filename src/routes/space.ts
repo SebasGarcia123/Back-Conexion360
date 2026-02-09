@@ -87,21 +87,22 @@ async function reservationBySpaceId (
   }
 }
 
-async function getAllSpaces(
-    req: Request,
-    res: Response,
-    next: NextFunction
-): Promise<void> {
-    try {
-        const spaces = await Space.find({ isActive: true }).populate({
-        path: "building",
-        select: "name address city",
-        })
-        res.send(spaces);
-    } catch (err) {
-        next(err);
-    }
-} 
+async function getAllSpaces(req: Request, res: Response, next: NextFunction) {
+  try {
+    const spaces = await Space.find({ isActive: true })
+      .populate({
+        path: 'building',
+        match: { isActive: true },
+      })
+
+    const filteredSpaces = spaces.filter(space => space.building)
+
+    res.status(200).json(filteredSpaces)
+  } catch (err) {
+    next(err)
+  }
+}
+
 
 // GET /spaces/admin
 async function getAllSpacesAdmin(
